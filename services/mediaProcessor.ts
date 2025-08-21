@@ -40,16 +40,32 @@ const extractFramesFromVideo = async (ffmpeg: any, file: File, setProgress: (mes
     ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
     
     setProgress("Processing video frame...");
-    // Optimize FFmpeg settings for faster processing
-    await ffmpeg.run(
-        '-i', inputFileName,
-        '-vf', 'scale=320:180', // Smaller scale for faster processing
-        '-frames:v', '1',
-        '-q:v', '20', // Higher compression for smaller files
-        '-preset', 'ultrafast', // Fastest encoding preset
-        '-threads', '1', // Single thread to avoid blocking
-        'output01.jpg'
-    );
+    
+    // Try to extract frame from the beginning of video for faster processing
+    try {
+        await ffmpeg.run(
+            '-i', inputFileName,
+            '-vf', 'scale=320:180', // Smaller scale for faster processing
+            '-frames:v', '1',
+            '-q:v', '25', // Higher compression for smaller files and faster processing
+            '-threads', '1', // Single thread to avoid blocking
+            '-y', // Overwrite output file
+            'output01.jpg'
+        );
+    } catch (error) {
+        console.log("First attempt failed, trying with seek...");
+        // Fallback: seek to 1 second and extract frame
+        await ffmpeg.run(
+            '-i', inputFileName,
+            '-ss', '1', // Seek to 1 second
+            '-vf', 'scale=320:180',
+            '-frames:v', '1',
+            '-q:v', '25',
+            '-threads', '1',
+            '-y',
+            'output01.jpg'
+        );
+    }
 
     setProgress("Reading processed frame...");
     const frames: string[] = [];
