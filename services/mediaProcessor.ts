@@ -31,22 +31,27 @@ export const fileToBase64 = (file: File): Promise<string> => {
  * @param file The video file.
  * @returns A promise that resolves with an array of base64 encoded frame strings.
  */
-const extractFramesFromVideo = async (ffmpeg: any, file: File): Promise<string[]> => {
+const extractFramesFromVideo = async (ffmpeg: any, file: File, setProgress: (message: string) => void): Promise<string[]> => {
     const { fetchFile } = FFmpeg;
     const inputFileName = 'input.mp4';
     const outputPattern = 'output%02d.jpg';
 
+    setProgress("Reading video file...");
     ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
     
-    // Extract 1 frame with high compression and smaller size
+    setProgress("Processing video frame...");
+    // Optimize FFmpeg settings for faster processing
     await ffmpeg.run(
         '-i', inputFileName,
-        '-vf', 'scale=480:270',
+        '-vf', 'scale=320:180', // Smaller scale for faster processing
         '-frames:v', '1',
-        '-q:v', '15',
+        '-q:v', '20', // Higher compression for smaller files
+        '-preset', 'ultrafast', // Fastest encoding preset
+        '-threads', '1', // Single thread to avoid blocking
         'output01.jpg'
     );
 
+    setProgress("Reading processed frame...");
     const frames: string[] = [];
     try {
         const outputFileName = 'output01.jpg';
@@ -85,14 +90,23 @@ export const processVideo = async (file: File, setProgress: (message: string) =>
           log: true,
           mainName: 'main',
           printErr: (msg: string) => console.log('FFmpeg Error:', msg),
-          print: (msg: string) => console.log('FFmpeg:', msg)
+          print: (msg: string) => console.log('FFmpeg:', msg),
+          // Add worker support
+          workerPath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.worker.js'
         });
         
         setProgress("Loading video engine (this may take a moment)...");
-        await ffmpeg.load();
+        
+        // Add timeout for loading
+        const loadPromise = ffmpeg.load();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Loading timeout - please try again')), 30000)
+        );
+        
+        await Promise.race([loadPromise, timeoutPromise]);
 
         setProgress("Extracting keyframes from video...");
-        const frames = await extractFramesFromVideo(ffmpeg, file);
+        const frames = await extractFramesFromVideo(ffmpeg, file, setProgress);
         
         setProgress("Video processing complete.");
         return frames;
@@ -103,6 +117,9 @@ export const processVideo = async (file: File, setProgress: (message: string) =>
         }
         if (error instanceof Error && error.message.includes('bad memory')) {
             throw new Error('Video processing failed due to memory issues. Please try with a smaller video file or refresh the page.');
+        }
+        if (error instanceof Error && error.message.includes('timeout')) {
+            throw new Error('Video processing took too long. Please try with a smaller video file or check your internet connection.');
         }
         throw error;
     }
