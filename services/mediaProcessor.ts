@@ -82,7 +82,10 @@ export const processVideo = async (file: File, setProgress: (message: string) =>
         const { createFFmpeg } = FFmpeg;
         const ffmpeg = createFFmpeg({
           corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-          log: true 
+          log: true,
+          mainName: 'main',
+          printErr: (msg: string) => console.log('FFmpeg Error:', msg),
+          print: (msg: string) => console.log('FFmpeg:', msg)
         });
         
         setProgress("Loading video engine (this may take a moment)...");
@@ -97,6 +100,9 @@ export const processVideo = async (file: File, setProgress: (message: string) =>
         console.error('Video processing error:', error);
         if (error instanceof Error && error.message.includes('SharedArrayBuffer')) {
             throw new Error('Video processing requires SharedArrayBuffer support. Please ensure you are using a modern browser and the application is served with proper CORS headers.');
+        }
+        if (error instanceof Error && error.message.includes('bad memory')) {
+            throw new Error('Video processing failed due to memory issues. Please try with a smaller video file or refresh the page.');
         }
         throw error;
     }

@@ -3,7 +3,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reaction Caption Generator</title>
     <script src="https://cdn.tailwindcss.com" onerror="console.warn('Tailwind CDN failed to load')"></script>
@@ -77,8 +76,21 @@
           console.log('Page loaded, SharedArrayBuffer available:', typeof SharedArrayBuffer !== 'undefined');
         });
       }
+      
+      // Set CORS headers for FFmpeg.wasm
+      if (typeof window !== 'undefined') {
+        window.crossOriginIsolated = true;
+      }
     </script>
-    <!-- ffmpeg.wasm scripts -->
+    
+    <!-- FFmpeg.wasm with proper configuration -->
+    <script>
+      // Configure FFmpeg.wasm
+      window.FFMPEG_CONFIG = {
+        log: true,
+        corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
+      };
+    </script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.0/dist/ffmpeg.min.js"></script>
   <script type="importmap">
 {
