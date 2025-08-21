@@ -5,63 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reaction Caption Generator</title>
-    <script src="https://cdn.tailwindcss.com" onerror="console.warn('Tailwind CDN failed to load')"></script>
-    <script>
-      window.addEventListener('load', function() {
-        if (typeof tailwind !== 'undefined') {
-          tailwind.config = {
-            theme: {
-              extend: {
-                colors: {
-                  'brand-primary': '#1e40af',
-                  'brand-secondary': '#3b82f6',
-                  'dark-bg': '#111827',
-                  'dark-card': '#1f2937',
-                  'dark-text': '#d1d5db',
-                  'dark-border': '#374151',
-                }
-              }
-            }
-          }
-        }
-      });
-    </script>
-    <style>
-      /* Force dark theme styles */
-      body {
-        background-color: #111827 !important;
-        color: #d1d5db !important;
-      }
-      
-      .bg-dark-bg {
-        background-color: #111827 !important;
-      }
-      
-      .bg-dark-card {
-        background-color: #1f2937 !important;
-      }
-      
-      .text-dark-text {
-        color: #d1d5db !important;
-      }
-      
-      .text-white {
-        color: #ffffff !important;
-      }
-      
-      .text-gray-400 {
-        color: #9ca3af !important;
-      }
-      
-      .bg-gray-800 {
-        background-color: #1f2937 !important;
-      }
-      
-      .border-gray-600 {
-        border-color: #4b5563 !important;
-      }
-    </style>
-
+    
     <!-- SharedArrayBuffer polyfill -->
     <script>
       // Polyfill for SharedArrayBuffer
