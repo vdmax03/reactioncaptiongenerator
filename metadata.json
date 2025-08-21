@@ -1,0 +1,5 @@
+{
+  "name": "Reaction Caption Generator",
+  "description": "An application that generates reaction-style captions in Indonesian for images and videos using Gemini. Users upload media, select a style, and receive a ready-to-use caption for social media platforms like Reels, TikTok, or Shorts.",
+  "requestFramePermissions": []
+}
