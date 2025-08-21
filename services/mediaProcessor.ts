@@ -37,7 +37,26 @@ const extractFramesFromVideo = async (ffmpeg: any, file: File, setProgress: (mes
     const outputPattern = 'output%02d.jpg';
 
     setProgress("Reading video file...");
-    ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
+    
+    // Read file in chunks to prevent main thread blocking
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    const fileBuffer = new Uint8Array(file.size);
+    let offset = 0;
+    
+    while (offset < file.size) {
+      const chunk = file.slice(offset, offset + chunkSize);
+      const chunkBuffer = await chunk.arrayBuffer();
+      fileBuffer.set(new Uint8Array(chunkBuffer), offset);
+      offset += chunkSize;
+      
+      // Update progress for large files
+      if (file.size > 10 * 1024 * 1024) { // Only for files > 10MB
+        const progress = Math.round((offset / file.size) * 50); // 50% for reading
+        setProgress(`Reading video file... ${progress}%`);
+      }
+    }
+    
+    ffmpeg.FS('writeFile', inputFileName, fileBuffer);
     
     setProgress("Processing video frame...");
     
@@ -107,7 +126,9 @@ export const processVideo = async (file: File, setProgress: (message: string) =>
           mainName: 'main',
           printErr: (msg: string) => console.log('FFmpeg Error:', msg),
           print: (msg: string) => console.log('FFmpeg:', msg),
-          // Add worker support
+          // Enable SharedArrayBuffer for better performance
+          enableSharedArrayBuffer: true,
+          // Use worker for better performance
           workerPath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.worker.js'
         });
         
