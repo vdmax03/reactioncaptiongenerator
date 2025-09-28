@@ -1,7 +1,7 @@
 
 import { ReactionStyle, OutputLength } from '../types';
 
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
 
 const buildInstruction = (style: ReactionStyle, length: OutputLength, withTags: boolean): string => {
   const stylePrompts = {
